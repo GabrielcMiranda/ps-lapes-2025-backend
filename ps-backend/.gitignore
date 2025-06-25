@@ -34,7 +34,7 @@ build/
 ### VS Code ###
 .vscode/
 
-### Sprinf config files ###
+### Spring config files ###
 application.properties
 application.yml
 
