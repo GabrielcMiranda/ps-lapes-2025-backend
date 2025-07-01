@@ -39,3 +39,6 @@ build/
 application.properties
 application.yml
 
+app.key
+public.key
+

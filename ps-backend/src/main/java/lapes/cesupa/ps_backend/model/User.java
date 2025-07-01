@@ -3,6 +3,8 @@ package lapes.cesupa.ps_backend.model;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,6 +16,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import lapes.cesupa.ps_backend.dto.LoginRequest;
 
 @Entity
 @Table(name="users")
@@ -95,7 +98,10 @@ public class User {
         public long getRoleId() {
             return roleId;
         }
-
-        
+ 
     }
+
+    public boolean isLoginCorrect(LoginRequest loginRequest, PasswordEncoder passwordEncoder){
+            return passwordEncoder.matches(loginRequest.password(), this.password);
+        }
 }
