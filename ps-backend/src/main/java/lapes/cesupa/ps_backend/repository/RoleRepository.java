@@ -5,7 +5,9 @@ import org.springframework.stereotype.Repository;
 
 import lapes.cesupa.ps_backend.model.Role;
 
+
 @Repository
 public interface RoleRepository extends JpaRepository<Role,Long> {
     
+    Role findByName(String name);
 }

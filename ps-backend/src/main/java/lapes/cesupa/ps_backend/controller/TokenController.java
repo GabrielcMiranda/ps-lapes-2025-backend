@@ -1,6 +1,7 @@
 package lapes.cesupa.ps_backend.controller;
 
 import java.time.Instant;
+import java.util.stream.Collectors;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lapes.cesupa.ps_backend.dto.LoginRequest;
 import lapes.cesupa.ps_backend.dto.LoginResponse;
+import lapes.cesupa.ps_backend.model.Role;
 import lapes.cesupa.ps_backend.repository.UserRepository;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -43,11 +45,17 @@ public class TokenController {
         var now = Instant.now();
         var expiresIn = 36000L;
 
+        var scopes = user.get().getRoles()
+                            .stream()
+                            .map(Role::getName)
+                            .collect(Collectors.joining(" "));
+
         var claims = JwtClaimsSet.builder()
                 .issuer("ps_backend")
                 .subject(user.get().getId().toString())
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(expiresIn))
+                .claim("scope", scopes)
                 .build();
 
         var jwtValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();

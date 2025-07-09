@@ -83,24 +83,6 @@ public class User {
         this.roles = roles;
     }
 
-    public enum Values{
-
-        ADMIN(1L),
-        KITCHEN(2L),
-        COSTUMER(3L);
-
-        long roleId;
-
-        Values(long roleId){
-            this.roleId = roleId;
-        }
-
-        public long getRoleId() {
-            return roleId;
-        }
- 
-    }
-
     public boolean isLoginCorrect(LoginRequest loginRequest, PasswordEncoder passwordEncoder){
             return passwordEncoder.matches(loginRequest.password(), this.password);
         }

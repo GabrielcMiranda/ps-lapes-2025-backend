@@ -34,5 +34,23 @@ public class Role {
         this.name = name;
     }
 
+    public enum Values{
+
+        ADMIN(1L),
+        KITCHEN(2L),
+        COSTUMER(3L);
+
+        long roleId;
+
+        Values(long roleId){
+            this.roleId = roleId;
+        }
+
+        public long getRoleId() {
+            return roleId;
+        }
+ 
+    }
+
     
 }
