@@ -1,38 +1,55 @@
 package lapes.cesupa.ps_backend.controller;
 
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
+
+import jakarta.transaction.Transactional;
+import lapes.cesupa.ps_backend.dto.CreateUser;
+import lapes.cesupa.ps_backend.dto.LoginRequest;
+import lapes.cesupa.ps_backend.dto.LoginResponse;
+import lapes.cesupa.ps_backend.dto.ProfileResponse;
+import lapes.cesupa.ps_backend.dto.RefreshRequest;
+import lapes.cesupa.ps_backend.model.Role;
+import lapes.cesupa.ps_backend.model.User;
+import lapes.cesupa.ps_backend.repository.RoleRepository;
+import lapes.cesupa.ps_backend.repository.UserRepository;
+import lapes.cesupa.ps_backend.service.TokenService;
+
+import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
-import org.springframework.web.bind.annotation.RestController;
-
-import lapes.cesupa.ps_backend.dto.LoginRequest;
-import lapes.cesupa.ps_backend.dto.LoginResponse;
-import lapes.cesupa.ps_backend.dto.RefreshRequest;
-import lapes.cesupa.ps_backend.repository.UserRepository;
-import lapes.cesupa.ps_backend.service.TokenService;
-
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 
 @RestController
-public class TokenController {
-    
-    private final JwtDecoder jwtDecoder;
-    private final UserRepository userRepository;
+public class AuthController {
+
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final JwtDecoder jwtDecoder;
     private final TokenService tokenService;
 
-    public TokenController(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, JwtDecoder jwtDecoder, TokenService tokenService){
-        this.userRepository = userRepository;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+
+
+    public AuthController(BCryptPasswordEncoder bCryptPasswordEncoder, JwtDecoder jwtDecoder, TokenService tokenService,
+            UserRepository userRepository, RoleRepository roleRepository) {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.jwtDecoder = jwtDecoder;
         this.tokenService = tokenService;
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
     }
 
     @PostMapping("auth/login")
@@ -79,6 +96,39 @@ public class TokenController {
        
         return ResponseEntity.ok(new LoginResponse(jwtAccessValue, TokenService.ACCESS_EXPIRATION, jwtRefreshValue, TokenService.REFRESH_EXPIRATION));
     }
+
+    @Transactional
+    @PostMapping("auth/register")
+    public ResponseEntity<Void> newUser(@RequestBody CreateUser dto) {
+        var costumerRole = roleRepository.findByName(Role.Values.COSTUMER.name());
+        var userFromDb = userRepository.findByUsername(dto.username());
+
+        if (userFromDb.isPresent()){
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+
+        var user = new User();
+        user.setUsername(dto.username());
+        user.setPassword(bCryptPasswordEncoder.encode(dto.password()));
+        user.setRoles(Set.of(costumerRole));
+        userRepository.save(user);
+
+        
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("auth/profile")
+    public ResponseEntity<ProfileResponse> profile(@AuthenticationPrincipal Jwt jwt) {
+        var userId = jwt.getSubject();
+        var user = userRepository.findById(UUID.fromString(userId)).orElseThrow(() -> new BadCredentialsException("user not found"));
+
+        var roles = user.getRoles().stream().map(Role::getName).toList();
+
+        var profile = new ProfileResponse(user.getId(), user.getUsername(),user.getEmail(), roles);
+
+        return ResponseEntity.ok(profile);
+    }
+    
     
     
 }
