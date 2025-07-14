@@ -1,20 +1,20 @@
 package lapes.cesupa.ps_backend.controller;
 
-import java.time.Instant;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.web.bind.annotation.RestController;
 
 import lapes.cesupa.ps_backend.dto.LoginRequest;
 import lapes.cesupa.ps_backend.dto.LoginResponse;
-import lapes.cesupa.ps_backend.model.Role;
+import lapes.cesupa.ps_backend.dto.RefreshRequest;
 import lapes.cesupa.ps_backend.repository.UserRepository;
+import lapes.cesupa.ps_backend.service.TokenService;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,44 +23,62 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 public class TokenController {
     
-    private final JwtEncoder jwtEncoder;
+    private final JwtDecoder jwtDecoder;
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final TokenService tokenService;
 
-    public TokenController(JwtEncoder jwtEncoder,  UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder){
-        this.jwtEncoder = jwtEncoder;
+    public TokenController(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, JwtDecoder jwtDecoder, TokenService tokenService){
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.jwtDecoder = jwtDecoder;
+        this.tokenService = tokenService;
     }
 
     @PostMapping("auth/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest){
 
         var user = userRepository.findByUsername(loginRequest.username());
-
-        if(user.isEmpty() || user.get().isLoginCorrect(loginRequest, bCryptPasswordEncoder)){
+        
+        if(user.isEmpty() || !user.get().isLoginCorrect(loginRequest, bCryptPasswordEncoder)){
             throw new BadCredentialsException("invalid user or password");
         }
+        var loggedUser = user.get();
 
-        var now = Instant.now();
-        var expiresIn = 36000L;
+        var jwtAccessValue = tokenService.generateAccessToken(loggedUser);
+        var jwtRefreshValue = tokenService.generateRefreshToken(loggedUser);
 
-        var scopes = user.get().getRoles()
-                            .stream()
-                            .map(Role::getName)
-                            .collect(Collectors.joining(" "));
-
-        var claims = JwtClaimsSet.builder()
-                .issuer("ps_backend")
-                .subject(user.get().getId().toString())
-                .issuedAt(now)
-                .expiresAt(now.plusSeconds(expiresIn))
-                .claim("scope", scopes)
-                .build();
-
-        var jwtValue = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-
-        return ResponseEntity.ok(new LoginResponse(jwtValue, expiresIn));
+        return ResponseEntity.ok(new LoginResponse(jwtAccessValue, TokenService.ACCESS_EXPIRATION, jwtRefreshValue, TokenService.REFRESH_EXPIRATION));
     }
+
+    @PostMapping("auth/refresh")
+    public ResponseEntity<LoginResponse> refresh(@RequestBody RefreshRequest refreshRequest) {
+
+        Jwt decodedRefreshToken;
+        try{
+            decodedRefreshToken = jwtDecoder.decode(refreshRequest.refreshToken());
+        }catch(JwtException e){
+            throw new BadCredentialsException("invalid refresh token");
+        }
+
+        var type = decodedRefreshToken.getClaimAsString("type");
+        if(!"refresh".equals(type)){
+            throw new BadCredentialsException("invalid refresh token type");
+        }
+
+        var userId = decodedRefreshToken.getSubject();
+        var user = userRepository.findById(UUID.fromString(userId));
+        if(user.isEmpty()){
+            throw new BadCredentialsException("user not found");
+        }
+        var loggedUser = user.get();
+
+        var jwtAccessValue = tokenService.generateAccessToken(loggedUser);
+        var jwtRefreshValue = tokenService.generateRefreshToken(loggedUser);
+
+       
+        return ResponseEntity.ok(new LoginResponse(jwtAccessValue, TokenService.ACCESS_EXPIRATION, jwtRefreshValue, TokenService.REFRESH_EXPIRATION));
+    }
+    
     
 }
