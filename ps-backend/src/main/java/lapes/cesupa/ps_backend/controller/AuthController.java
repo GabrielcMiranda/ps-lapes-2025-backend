@@ -28,11 +28,13 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 
 
 
 @RestController
+@RequestMapping("/auth")
 public class AuthController {
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -52,7 +54,7 @@ public class AuthController {
         this.roleRepository = roleRepository;
     }
 
-    @PostMapping("auth/login")
+    @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest){
 
         var user = userRepository.findByUsername(loginRequest.username());
@@ -68,7 +70,7 @@ public class AuthController {
         return ResponseEntity.ok(new LoginResponse(jwtAccessValue, TokenService.ACCESS_EXPIRATION, jwtRefreshValue, TokenService.REFRESH_EXPIRATION));
     }
 
-    @PostMapping("auth/refresh")
+    @PostMapping("/refresh")
     public ResponseEntity<LoginResponse> refresh(@RequestBody RefreshRequest refreshRequest) {
 
         Jwt decodedRefreshToken;
@@ -98,7 +100,7 @@ public class AuthController {
     }
 
     @Transactional
-    @PostMapping("auth/register")
+    @PostMapping("/register")
     public ResponseEntity<Void> newUser(@RequestBody CreateUser dto) {
         var costumerRole = roleRepository.findByName(Role.Values.COSTUMER.name());
         var userFromDb = userRepository.findByUsername(dto.username());
@@ -117,7 +119,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("auth/profile")
+    @GetMapping("/profile")
     public ResponseEntity<ProfileResponse> profile(@AuthenticationPrincipal Jwt jwt) {
         var userId = jwt.getSubject();
         var user = userRepository.findById(UUID.fromString(userId)).orElseThrow(() -> new BadCredentialsException("user not found"));
