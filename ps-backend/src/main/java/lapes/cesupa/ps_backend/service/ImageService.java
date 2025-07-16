@@ -2,6 +2,9 @@ package lapes.cesupa.ps_backend.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,9 +33,13 @@ public class ImageService {
         String fileName = UUID.randomUUID() + "-" + image.getOriginalFilename();
             File dest = new File(uploadCategoriesDir + fileName);
             try {
+                System.out.println("Working dir: " + System.getProperty("user.dir"));
+                System.out.println("Original filename: " + image.getOriginalFilename());
+                System.out.println("Saving file to: " + dest.getAbsolutePath());
                 image.transferTo(dest);
                 return "/" + uploadCategoriesDir + fileName;
             } catch (IOException e) {
+                e.printStackTrace();
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error while saving the image");
             }
     }
