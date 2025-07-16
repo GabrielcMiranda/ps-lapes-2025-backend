@@ -1,5 +1,6 @@
 package lapes.cesupa.ps_backend.config;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 import org.springframework.boot.CommandLineRunner;
@@ -44,11 +45,15 @@ public class AdminUserConfig implements CommandLineRunner {
         userAdmin.ifPresentOrElse(
             user -> System.out.println("admin is already logged"),
             () -> {
+                var now = LocalDateTime.now();
                 var user = new User();
                 user.setUsername("admin");
                 user.setEmail("gabrielcostademiranda@gmail.com");
+                user.setPhone("5591992981511");
                 user.setPassword(passwordEncoder.encode("123"));
                 user.setRoles(Set.of(roleAdmin));
+                user.setCreated_at(now);
+                user.setUpdated_at(now);
                 userRepository.save(user);
             }
         );
@@ -61,13 +66,17 @@ public class AdminUserConfig implements CommandLineRunner {
         var userKitchen = userRepository.findByUsername("kitchen");
 
         userKitchen.ifPresentOrElse(
-            user -> System.out.println("admin is already logged"),
+            user -> System.out.println("kitchen is already logged"),
             () -> {
+                var now = LocalDateTime.now();
                 var user = new User();
                 user.setUsername("kitchen");
                 user.setEmail("gabrielcostademiranda2@gmail.com");
+                user.setPhone("5591984145141");
                 user.setPassword(passwordEncoder.encode("123"));
                 user.setRoles(Set.of(roleKitchen));
+                user.setCreated_at(now);
+                user.setUpdated_at(now);
                 userRepository.save(user);
             }
             );

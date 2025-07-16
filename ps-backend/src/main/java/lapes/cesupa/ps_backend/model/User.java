@@ -37,9 +37,6 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private Set<Role> roles;
-
     private String phone;
 
     private LocalDateTime created_at;
@@ -52,6 +49,9 @@ public class User {
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
+
+    @Column(nullable = false)
+    private Set<Role> roles;
 
     public UUID getId() {
         return id;
