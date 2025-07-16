@@ -1,5 +1,6 @@
 package lapes.cesupa.ps_backend.service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -66,12 +67,17 @@ public class AuthService {
     @Transactional
     public User createUser(CreateUser dto){
         var costumerRole = roleRepository.findByName(Role.Values.COSTUMER.name());
-        postUsernameValidation(dto.username());
+        postUserValidation(dto.username());
 
+        var now = LocalDateTime.now();
         var user = new User();
         user.setUsername(dto.username());
+        user.setEmail(dto.email());
+        user.setPhone(dto.phone());
         user.setPassword(bCryptPasswordEncoder.encode(dto.password()));
         user.setRoles(Set.of(costumerRole));
+        user.setCreated_at(now);
+        user.setUpdated_at(now);
 
         return userRepository.save(user);
     }
@@ -81,7 +87,7 @@ public class AuthService {
 
         var roles = user.getRoles().stream().map(Role::getName).toList();
 
-        return new ProfileResponse(user.getId(), user.getUsername(),user.getEmail(), roles);
+        return new ProfileResponse(user.getUsername(),user.getEmail(), roles, user.getPhone());
     }
 
     private Optional<User> validateUserId(String id){
@@ -94,7 +100,7 @@ public class AuthService {
     }
 
     private Optional<User> validateLogin(LoginRequest dto){
-        var user = userRepository.findByUsername(dto.username());
+        var user = findByUsernameOrEmail(dto.login());
         
         if(user.isEmpty() || !user.get().isLoginCorrect(dto, bCryptPasswordEncoder)){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid user or password");
@@ -102,12 +108,17 @@ public class AuthService {
         return user;
     }
 
-    private Optional<User> postUsernameValidation(String username){
-        var user = userRepository.findByUsername(username);
+    private Optional<User> postUserValidation(String login){
+        var user = findByUsernameOrEmail(login);
         
         if(user.isPresent()){
-            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "username already exists");
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "username or email already exist");
         }
         return user;
     }
+
+    private Optional<User> findByUsernameOrEmail(String login){
+    return userRepository.findByUsername(login)
+        .or(() -> userRepository.findByEmail(login));
+}
 }

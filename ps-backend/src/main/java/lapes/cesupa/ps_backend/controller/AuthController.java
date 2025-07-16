@@ -2,6 +2,7 @@ package lapes.cesupa.ps_backend.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import lapes.cesupa.ps_backend.dto.CreateUser;
 import lapes.cesupa.ps_backend.dto.LoginRequest;
 import lapes.cesupa.ps_backend.dto.LoginResponse;
@@ -48,7 +49,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Void> newUser(@RequestBody CreateUser dto) {
+    public ResponseEntity<Void> newUser(@RequestBody @Valid CreateUser dto) {
         
         authService.createUser(dto);
         

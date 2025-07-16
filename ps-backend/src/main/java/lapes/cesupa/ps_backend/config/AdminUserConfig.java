@@ -3,6 +3,7 @@ package lapes.cesupa.ps_backend.config;
 import java.util.Set;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import jakarta.transaction.Transactional;
@@ -11,6 +12,7 @@ import lapes.cesupa.ps_backend.model.User;
 import lapes.cesupa.ps_backend.repository.RoleRepository;
 import lapes.cesupa.ps_backend.repository.UserRepository;
 
+@Configuration
 public class AdminUserConfig implements CommandLineRunner {
 
     private RoleRepository roleRepository;
@@ -29,7 +31,12 @@ public class AdminUserConfig implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) throws Exception {
-        
+        addAdmin();
+        addKitchen();
+    }
+
+    private void addAdmin(){
+
         var roleAdmin = roleRepository.findByName(Role.Values.ADMIN.name());
 
         var userAdmin = userRepository.findByUsername("admin");
@@ -39,13 +46,30 @@ public class AdminUserConfig implements CommandLineRunner {
             () -> {
                 var user = new User();
                 user.setUsername("admin");
+                user.setEmail("gabrielcostademiranda@gmail.com");
                 user.setPassword(passwordEncoder.encode("123"));
                 user.setRoles(Set.of(roleAdmin));
                 userRepository.save(user);
             }
         );
-        
     }
 
-    
+    private void addKitchen(){
+
+        var roleKitchen = roleRepository.findByName(Role.Values.KITCHEN.name());
+
+        var userKitchen = userRepository.findByUsername("kitchen");
+
+        userKitchen.ifPresentOrElse(
+            user -> System.out.println("admin is already logged"),
+            () -> {
+                var user = new User();
+                user.setUsername("kitchen");
+                user.setEmail("gabrielcostademiranda2@gmail.com");
+                user.setPassword(passwordEncoder.encode("123"));
+                user.setRoles(Set.of(roleKitchen));
+                userRepository.save(user);
+            }
+            );
+    }
 }

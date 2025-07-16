@@ -1,5 +1,6 @@
 package lapes.cesupa.ps_backend.model;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.UUID;
 
@@ -27,12 +28,23 @@ public class User {
     @Column(name = "user_id")
     private UUID id;
 
-    @Column(unique = true)
+    @Column(nullable = false, unique = true)
     private String username;
 
+    @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
+    private Set<Role> roles;
+
+    private String phone;
+
+    private LocalDateTime created_at;
+
+    private LocalDateTime updated_at;
 
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
@@ -40,8 +52,6 @@ public class User {
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-
-    private Set<Role> roles;
 
     public UUID getId() {
         return id;
@@ -81,6 +91,30 @@ public class User {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public LocalDateTime getCreated_at() {
+        return created_at;
+    }
+
+    public void setCreated_at(LocalDateTime created_at) {
+        this.created_at = created_at;
+    }
+
+    public LocalDateTime getUpdated_at() {
+        return updated_at;
+    }
+
+    public void setUpdated_at(LocalDateTime updated_at) {
+        this.updated_at = updated_at;
     }
 
     public boolean isLoginCorrect(LoginRequest loginRequest, PasswordEncoder passwordEncoder){
