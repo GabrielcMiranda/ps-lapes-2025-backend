@@ -4,12 +4,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lapes.cesupa.ps_backend.dto.CreateCategory;
+import lapes.cesupa.ps_backend.dto.ListCategoriesResponse;
 import lapes.cesupa.ps_backend.service.CategoryService;
+
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+
 
 
 @RestController
@@ -28,5 +33,12 @@ public class CategoryController {
         categoryService.create(dto);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/categories")
+    public ResponseEntity<List<ListCategoriesResponse>> listCategories() {
+        var categories  = categoryService.listAll();
+        return ResponseEntity.ok(categories);
+    }
+    
     
 }

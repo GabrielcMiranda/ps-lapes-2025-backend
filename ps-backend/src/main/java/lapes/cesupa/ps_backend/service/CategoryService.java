@@ -1,13 +1,17 @@
 package lapes.cesupa.ps_backend.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import lapes.cesupa.ps_backend.dto.CreateCategory;
+import lapes.cesupa.ps_backend.dto.ListCategoriesResponse;
 import lapes.cesupa.ps_backend.model.Category;
 import lapes.cesupa.ps_backend.repository.CategoryRepository;
 
@@ -44,6 +48,22 @@ public class CategoryService {
         category.setImageUrl(imageUrl);
 
         return categoryRepository.save(category);
+    }
+
+    public List<ListCategoriesResponse> listAll(){
+
+        // ver se realmente mando todos os atributos e conferir se ta certo o id
+        var categories = categoryRepository.findAll();
+
+        if(categories.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "no categories were found");
+        }
+
+        List<ListCategoriesResponse> response = new ArrayList<>();
+
+        categories.stream().forEach(category -> response.add(new ListCategoriesResponse(category.getName(),category.getDescription(),category.getImageUrl())));
+
+        return response;
     }
 
     private void validateUniqueName(String name){
