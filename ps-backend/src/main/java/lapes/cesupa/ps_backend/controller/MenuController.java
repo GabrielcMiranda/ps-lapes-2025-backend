@@ -6,11 +6,16 @@ import org.springframework.web.bind.annotation.RestController;
 import lapes.cesupa.ps_backend.dto.CreateCategory;
 import lapes.cesupa.ps_backend.dto.CreateItem;
 import lapes.cesupa.ps_backend.dto.ListCategoriesResponse;
+import lapes.cesupa.ps_backend.dto.ListItemResponse;
 import lapes.cesupa.ps_backend.service.CategoryService;
 import lapes.cesupa.ps_backend.service.ItemService;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -20,6 +25,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 @RestController
@@ -68,6 +75,23 @@ public class MenuController {
         itemService.create(dto);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/items")
+    public ResponseEntity<Page<ListItemResponse>> listItems(
+        @RequestParam(required = false) Long categoryId,
+        @RequestParam(required = false) Integer minPrice,
+        @RequestParam(required = false) Integer maxPrice,
+        @RequestParam(required = false) String search,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "id,asc") String[] sort
+        ){
+        Sort sorting = Sort.by(Sort.Direction.fromString(sort[1]), sort[0]);
+        Pageable pageable = PageRequest.of(page, size, sorting);
+        
+        return ResponseEntity.ok(itemService.listAll(categoryId, minPrice, maxPrice, search, pageable));
+    }
+    
 
     
     
