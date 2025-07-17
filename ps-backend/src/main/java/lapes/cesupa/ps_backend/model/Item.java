@@ -41,6 +41,8 @@ public class Item {
 
     private LocalDateTime updatedAt;
 
+    private String extraAttributes;
+
     @ManyToMany
     @JoinTable(
         name = "item_category",
@@ -132,6 +134,16 @@ public class Item {
     public void setImages(List<ItemImage> images) {
         this.images = images;
     }
+
+    public String getExtraAttributes() {
+        return extraAttributes;
+    }
+
+    public void setExtraAttributes(String extraAttributes) {
+        this.extraAttributes = extraAttributes;
+    }
+
+    
 
     
 }

@@ -38,6 +38,7 @@ public class ItemService {
         item.setCategories(categories);
         item.setEstimatedPreptime(dto.estimatedPrepTime());
         item.setAvailable(dto.isAvailable());
+        item.setExtraAttributes(dto.extraAttributes());
         item.setCreatedAt(now);
         item.setUpdatedAt(now);
 
