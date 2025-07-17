@@ -33,7 +33,7 @@ public class Category {
         private LocalDateTime updatedAt;
 
         @ManyToMany(mappedBy = "categories")
-        private Set<Dish> dishes = new HashSet<>();
+        private Set<Item> items = new HashSet<>();
 
         public Long getId() {
             return id;

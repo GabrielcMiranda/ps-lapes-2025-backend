@@ -2,9 +2,7 @@ package lapes.cesupa.ps_backend.model;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.springframework.data.annotation.Id;
 
@@ -20,12 +18,12 @@ import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "dishes")
-public class Dish {
+@Table(name = "items")
+public class Item {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "dish_id")
+    @Column(name = "item_id")
     private Long id;
 
     @Column(unique = true, nullable = false)
@@ -46,15 +44,15 @@ public class Dish {
 
     @ManyToMany
     @JoinTable(
-        name = "dish_category",
-        joinColumns = @JoinColumn(name = "dish_id"),
+        name = "item_category",
+        joinColumns = @JoinColumn(name = "item_id"),
         inverseJoinColumns = @JoinColumn(name = "category_id")
     )
-    private Set<Category> categories = new HashSet<>();
+    private List<Category> categories = new ArrayList<>();
 
-    @OneToMany(mappedBy = "dish", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "item", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
     @OrderBy("position ASC")
-    private List<DishImage> images = new ArrayList<>();
+    private List<ItemImage> images = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -120,19 +118,19 @@ public class Dish {
         this.updatedAt = updatedAt;
     }
 
-    public Set<Category> getCategories() {
+    public List<Category> getCategories() {
         return categories;
     }
 
-    public void setCategories(Set<Category> categories) {
+    public void setCategories(List<Category> categories) {
         this.categories = categories;
     }
 
-    public List<DishImage> getImages() {
+    public List<ItemImage> getImages() {
         return images;
     }
 
-    public void setImages(List<DishImage> images) {
+    public void setImages(List<ItemImage> images) {
         this.images = images;
     }
 

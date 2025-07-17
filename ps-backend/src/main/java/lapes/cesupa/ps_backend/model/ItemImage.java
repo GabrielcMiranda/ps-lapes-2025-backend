@@ -10,7 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
 @Entity
-public class DishImage {
+public class ItemImage {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,8 +23,8 @@ public class DishImage {
     private Integer position;
 
     @ManyToOne
-    @JoinColumn(name = "dish_id")
-    private Dish dish;
+    @JoinColumn(name = "item_id")
+    private Item item;
 
     public long getId() {
         return id;
@@ -50,12 +50,12 @@ public class DishImage {
         this.position = position;
     }
 
-    public Dish getDish() {
-        return dish;
+    public Item getItem() {
+        return item;
     }
 
-    public void setDish(Dish dish) {
-        this.dish = dish;
+    public void setItem(Item item) {
+        this.item = item;
     }
 
     

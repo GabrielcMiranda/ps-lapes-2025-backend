@@ -3,7 +3,9 @@ package lapes.cesupa.ps_backend.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,9 +23,12 @@ public class CategoryService {
 
     private final ImageService imageService;
 
-    public CategoryService(CategoryRepository categoryRepository, ImageService imageService) {
+    private final String uploadCategoriesDir;
+
+    public CategoryService(CategoryRepository categoryRepository, ImageService imageService,@Value("${app.upload.categories-path}") String uploadCategoriesDir) {
         this.categoryRepository = categoryRepository;
         this.imageService = imageService;
+        this.uploadCategoriesDir = uploadCategoriesDir;
     }
 
     @Transactional
@@ -34,7 +39,7 @@ public class CategoryService {
 
         if (dto.getImage() != null && !dto.getImage().isEmpty()){
             imageService.validateImageType(dto.getImage().getContentType());
-            imageUrl = imageService.storeImage(dto.getImage());
+            imageUrl = imageService.storeImage(uploadCategoriesDir,dto.getImage());
         }
 
         var now = LocalDateTime.now();
@@ -78,7 +83,7 @@ public class CategoryService {
 
         if (dto.getImage() != null && !dto.getImage().isEmpty()){
             imageService.validateImageType(dto.getImage().getContentType());
-            var imageUrl = imageService.storeImage(dto.getImage());
+            var imageUrl = imageService.storeImage(uploadCategoriesDir, dto.getImage());
             category.setImageUrl(imageUrl);
         }
 
@@ -109,6 +114,15 @@ public class CategoryService {
         }
 
         return category.get();
+    }
+
+    public List<Category> findAllById(Set<Long> ids){
+        var categories = categoryRepository.findAllById(ids);
+        if(categories.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY,"no categories were found");
+        }
+
+        return categories;
     }
 
     
