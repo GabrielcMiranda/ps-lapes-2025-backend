@@ -8,10 +8,13 @@ import lapes.cesupa.ps_backend.dto.CreateItem;
 import lapes.cesupa.ps_backend.dto.ListCategoriesResponse;
 import lapes.cesupa.ps_backend.dto.ListItemResponse;
 import lapes.cesupa.ps_backend.service.CategoryService;
+import lapes.cesupa.ps_backend.service.ImageService;
 import lapes.cesupa.ps_backend.service.ItemService;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -28,18 +31,23 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 
-
 @RestController
 @RequestMapping("/menu")
 public class MenuController {
+
+    private final ImageService imageService;
 
     private final ItemService itemService;
 
     private final CategoryService categoryService;
 
-    public MenuController(CategoryService categoryService, ItemService itemService) {
+    private final String uploadCategoriesDir;
+
+    public MenuController(CategoryService categoryService, ItemService itemService, ImageService imageService, @Value("${app.upload.categories-path}") String uploadCategoriesDir) {
         this.categoryService = categoryService;
         this.itemService = itemService;
+        this.imageService = imageService;
+        this.uploadCategoriesDir = uploadCategoriesDir;
     }
 
     @PostMapping("/categories")
@@ -47,6 +55,13 @@ public class MenuController {
     public ResponseEntity<Void> createCategory(@ModelAttribute CreateCategory dto) {
         categoryService.create(dto);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/categoryImages/{filename}")
+    public ResponseEntity<Resource> getCategoryImage(@PathVariable String filename) {
+        System.out.println(">> Tentando buscar imagem: " + filename);
+        System.out.println(">> Diretório base: " + uploadCategoriesDir);
+        return imageService.getImage(uploadCategoriesDir, filename); 
     }
 
     @GetMapping("/categories")
@@ -91,7 +106,6 @@ public class MenuController {
         
         return ResponseEntity.ok(itemService.listAll(categoryId, minPrice, maxPrice, search, pageable));
     }
-    
 
     
     

@@ -1,5 +1,7 @@
 package lapes.cesupa.ps_backend.service;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import lapes.cesupa.ps_backend.dto.CreateCategory;
 import lapes.cesupa.ps_backend.dto.ListCategoriesResponse;
@@ -62,11 +65,33 @@ public class CategoryService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "no categories were found");
         }
 
-        List<ListCategoriesResponse> response = new ArrayList<>();
+        String baseUrl = ServletUriComponentsBuilder
+                        .fromCurrentContextPath()
+                        .build()
+                        .toUriString();
 
-        categories.stream().forEach(category -> response.add(new ListCategoriesResponse(category.getName(),category.getDescription(),category.getImageUrl())));
+        return categories.stream()
+            .map(category -> {
+                String imageUrl = null;
+                String imagePathStr = category.getImageUrl();
+                    if (category.getImageUrl() != null) {
+                        try {
+                            Path fullPath = Paths.get(imagePathStr.replaceFirst("^/(?!/)", ""));
+                            String fileName = fullPath.getFileName().toString();
+                            imageUrl = baseUrl + "/menu/categoryImages/" + fileName;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        imageUrl = null;
+                }
+            }
 
-        return response;
+                return new ListCategoriesResponse(
+                    category.getName(),
+                    category.getDescription(),
+                    imageUrl
+                );
+            })
+            .toList();
     }
 
     @Transactional
