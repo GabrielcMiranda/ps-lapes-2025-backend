@@ -38,7 +38,8 @@ public class Role {
 
         ADMIN(1L),
         KITCHEN(2L),
-        COSTUMER(3L);
+        DELIVERY(3L),
+        COSTUMER(4L);
 
         long roleId;
 
