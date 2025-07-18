@@ -131,6 +131,13 @@ public class MenuController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/items/{id}")
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    public ResponseEntity<Void> disableItem(@PathVariable Long id) {
+        itemService.disableItem(id);
+        return ResponseEntity.ok().build();
+    }
+
     
     
 }

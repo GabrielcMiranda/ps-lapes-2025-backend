@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.transaction.Transactional;
 import lapes.cesupa.ps_backend.dto.CreateItem;
 import lapes.cesupa.ps_backend.dto.GetItemResponse;
 import lapes.cesupa.ps_backend.dto.ListItemResponse;
@@ -39,6 +40,7 @@ public class ItemService {
         this.imageService = imageService;
     }
 
+    @Transactional
     public Item create(CreateItem dto){
         postItemValidation(dto.name());
 
@@ -89,6 +91,7 @@ public class ItemService {
         return new GetItemResponse(item.getName(),item.getDescription(),imageUrls,item.isAvailable());
     }
 
+    @Transactional
     public Item update(Long id,CreateItem dto){
         var item = validateItemId(id);
 
@@ -124,8 +127,13 @@ public class ItemService {
         item.setUpdatedAt(LocalDateTime.now());
 
         return itemRepository.save(item);
+    }
 
-
+    @Transactional
+    public Item disableItem(Long id){
+        var item = validateItemId(id);
+        item.setAvailable(false);
+        return itemRepository.save(item);
     }
 
     private void postItemValidation(String name){
