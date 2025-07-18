@@ -1,9 +1,6 @@
 package lapes.cesupa.ps_backend.service;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -12,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import lapes.cesupa.ps_backend.dto.CreateCategory;
 import lapes.cesupa.ps_backend.dto.ListCategoriesResponse;

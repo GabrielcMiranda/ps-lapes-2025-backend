@@ -124,6 +124,13 @@ public class MenuController {
         return ResponseEntity.ok(item);
     }
 
+    @PutMapping("/items/{id}")
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    public ResponseEntity<Void> updateItem(@PathVariable Long id, @RequestBody CreateItem dto) {
+        itemService.update(id, dto);
+        return ResponseEntity.ok().build();
+    }
+
     
     
 }

@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Locale.Category;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -17,7 +18,6 @@ import org.springframework.web.server.ResponseStatusException;
 import lapes.cesupa.ps_backend.dto.CreateItem;
 import lapes.cesupa.ps_backend.dto.GetItemResponse;
 import lapes.cesupa.ps_backend.dto.ListItemResponse;
-import lapes.cesupa.ps_backend.model.Category;
 import lapes.cesupa.ps_backend.model.Item;
 import lapes.cesupa.ps_backend.model.ItemImage;
 import lapes.cesupa.ps_backend.repository.ItemRepository;
@@ -87,6 +87,45 @@ public class ItemService {
             .collect(Collectors.toList());
 
         return new GetItemResponse(item.getName(),item.getDescription(),imageUrls,item.isAvailable());
+    }
+
+    public Item update(Long id,CreateItem dto){
+        var item = validateItemId(id);
+
+        if(dto.name()!=null && !dto.name().isBlank()){
+            item.setName(dto.name());
+        }
+
+        if(dto.description()!=null && !dto.description().isBlank()){
+            item.setDescription(dto.description());
+        }
+
+        if (dto.priceInCents() != null && dto.priceInCents() > 0) {
+            item.setPriceInCents(dto.priceInCents());
+        }
+
+        if (dto.categoryIds() != null && !dto.categoryIds().isEmpty()) {
+            var categories = categoryService.findAllById(dto.categoryIds());
+            item.setCategories(categories);
+        }
+
+        if (dto.estimatedPrepTime() != null && dto.estimatedPrepTime() > 0) {
+            item.setEstimatedPreptime(dto.estimatedPrepTime());
+        }
+
+        if (dto.isAvailable() != null) {
+            item.setAvailable(dto.isAvailable());
+        }
+
+        if(dto.extraAttributes()!=null && !dto.extraAttributes().isBlank()){
+            item.setExtraAttributes(dto.extraAttributes());
+        }
+
+        item.setUpdatedAt(LocalDateTime.now());
+
+        return itemRepository.save(item);
+
+
     }
 
     private void postItemValidation(String name){

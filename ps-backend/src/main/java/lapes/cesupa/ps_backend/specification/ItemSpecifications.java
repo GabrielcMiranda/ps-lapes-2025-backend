@@ -32,6 +32,6 @@ public class ItemSpecifications {
     }
 
     public static Specification<Item> isAvailable() {
-        return (root, query, cb) -> cb.isTrue(root.get("available"));
+        return (root, query, cb) -> cb.isTrue(root.get("isAvailable"));
     }
 }

@@ -35,7 +35,7 @@ public class Item {
 
     private Integer estimatedPreptime;
 
-    private boolean isAvailable;
+    private Boolean isAvailable;
 
     private LocalDateTime createdAt;
 
