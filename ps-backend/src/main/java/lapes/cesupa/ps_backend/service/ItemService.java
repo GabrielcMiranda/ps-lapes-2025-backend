@@ -1,6 +1,10 @@
 package lapes.cesupa.ps_backend.service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -11,8 +15,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import lapes.cesupa.ps_backend.dto.CreateItem;
+import lapes.cesupa.ps_backend.dto.GetItemResponse;
 import lapes.cesupa.ps_backend.dto.ListItemResponse;
+import lapes.cesupa.ps_backend.model.Category;
 import lapes.cesupa.ps_backend.model.Item;
+import lapes.cesupa.ps_backend.model.ItemImage;
 import lapes.cesupa.ps_backend.repository.ItemRepository;
 import lapes.cesupa.ps_backend.specification.ItemSpecifications;
 
@@ -23,11 +30,13 @@ public class ItemService {
 
     private final ItemRepository itemRepository;
     private final String uploadItemsDir;
+    private final ImageService imageService;
 
-    public ItemService(ItemRepository itemRepository, @Value("${app.upload.items-path}") String uploadItemsDir, CategoryService categoryService) {
+    public ItemService(ItemRepository itemRepository, @Value("${app.upload.items-path}") String uploadItemsDir, CategoryService categoryService, ImageService imageService) {
         this.itemRepository = itemRepository;
         this.uploadItemsDir = uploadItemsDir;
         this.categoryService = categoryService;
+        this.imageService = imageService;
     }
 
     public Item create(CreateItem dto){
@@ -52,20 +61,33 @@ public class ItemService {
 
     public Page<ListItemResponse> listAll(Long categoryId, Integer minPrice, Integer maxPrice, String search, Pageable pageable){
        Specification<Item> spec = Specification.<Item>where(null)
+            .and(ItemSpecifications.isAvailable())
             .and(ItemSpecifications.hasCategory(categoryId))
             .and(ItemSpecifications.priceGreaterThanOrEqual(minPrice))
             .and(ItemSpecifications.priceLessThanOrEqual(maxPrice))
             .and(ItemSpecifications.nameOrDescriptionContains(search));
 
          return itemRepository.findAll(spec, pageable)
-                .map(d -> new ListItemResponse(
-                    d.getId(),
-                    d.getName(),
-                    d.getDescription(),
-                    d.getPriceInCents(),
-                    d.isAvailable()
+                .map(i -> new ListItemResponse(
+                    i.getId(),
+                    i.getName(),
+                    i.getDescription(),
+                    i.getPriceInCents(),
+                    i.isAvailable()
                 ));
-        }
+    }
+
+    public GetItemResponse get(Long id){
+        var item = validateItemId(id);
+        List<String> imageUrls = Optional.ofNullable(item.getImages())
+            .orElse(List.of()) // lista vazia
+            .stream()
+            .sorted(Comparator.comparing(ItemImage::getPosition))
+            .map(img -> imageService.generateItemImageUrl(img.getUrl()))
+            .collect(Collectors.toList());
+
+        return new GetItemResponse(item.getName(),item.getDescription(),imageUrls,item.isAvailable());
+    }
 
     private void postItemValidation(String name){
         var item = itemRepository.findByName(name);
@@ -73,5 +95,14 @@ public class ItemService {
         if(item.isPresent()){
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "this item already exists");
         }
+    }
+
+    private Item validateItemId(Long id){
+        var item = itemRepository.findById(id);
+        if(item.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "item not found");
+        }
+
+        return item.get();
     }
 }

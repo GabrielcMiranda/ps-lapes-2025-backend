@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lapes.cesupa.ps_backend.dto.CreateCategory;
 import lapes.cesupa.ps_backend.dto.CreateItem;
+import lapes.cesupa.ps_backend.dto.GetItemResponse;
 import lapes.cesupa.ps_backend.dto.ListCategoriesResponse;
 import lapes.cesupa.ps_backend.dto.ListItemResponse;
 import lapes.cesupa.ps_backend.service.CategoryService;
@@ -43,11 +44,14 @@ public class MenuController {
 
     private final String uploadCategoriesDir;
 
-    public MenuController(CategoryService categoryService, ItemService itemService, ImageService imageService, @Value("${app.upload.categories-path}") String uploadCategoriesDir) {
+    private final String uploadItemsDir;
+
+    public MenuController(CategoryService categoryService, ItemService itemService, ImageService imageService, @Value("${app.upload.categories-path}") String uploadCategoriesDir, @Value("${app.upload.items-path}") String uploadItemsdir) {
         this.categoryService = categoryService;
         this.itemService = itemService;
         this.imageService = imageService;
         this.uploadCategoriesDir = uploadCategoriesDir;
+        this.uploadItemsDir = uploadItemsdir;
     }
 
     @PostMapping("/categories")
@@ -62,6 +66,13 @@ public class MenuController {
         System.out.println(">> Tentando buscar imagem: " + filename);
         System.out.println(">> Diretório base: " + uploadCategoriesDir);
         return imageService.getImage(uploadCategoriesDir, filename); 
+    }
+
+    @GetMapping("/itemImages/{filename}")
+    public ResponseEntity<Resource> getItemImage(@PathVariable String filename) {
+        System.out.println(">> Tentando buscar imagem: " + filename);
+        System.out.println(">> Diretório base: " + uploadItemsDir);
+        return imageService.getImage(uploadItemsDir, filename); 
     }
 
     @GetMapping("/categories")
@@ -105,6 +116,12 @@ public class MenuController {
         Pageable pageable = PageRequest.of(page, size, sorting);
         
         return ResponseEntity.ok(itemService.listAll(categoryId, minPrice, maxPrice, search, pageable));
+    }
+
+    @GetMapping("/items/{id}")
+    public ResponseEntity<GetItemResponse> getItem(@PathVariable Long id){
+        var item = itemService.get(id);
+        return ResponseEntity.ok(item);
     }
 
     

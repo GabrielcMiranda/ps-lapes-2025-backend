@@ -61,30 +61,10 @@ public class CategoryService {
 
         var categories = categoryRepository.findAll();
 
-        if(categories.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "no categories were found");
-        }
-
-        String baseUrl = ServletUriComponentsBuilder
-                        .fromCurrentContextPath()
-                        .build()
-                        .toUriString();
-
         return categories.stream()
             .map(category -> {
-                String imageUrl = null;
-                String imagePathStr = category.getImageUrl();
-                    if (category.getImageUrl() != null) {
-                        try {
-                            Path fullPath = Paths.get(imagePathStr.replaceFirst("^/(?!/)", ""));
-                            String fileName = fullPath.getFileName().toString();
-                            imageUrl = baseUrl + "/menu/categoryImages/" + fileName;
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        imageUrl = null;
-                }
-            }
-
+                var imageUrl = imageService.generateCategoryImageUrl(category);
+                
                 return new ListCategoriesResponse(
                     category.getName(),
                     category.getDescription(),

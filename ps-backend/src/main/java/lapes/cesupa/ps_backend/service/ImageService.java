@@ -18,10 +18,19 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import lapes.cesupa.ps_backend.model.Category;
+import lapes.cesupa.ps_backend.model.Item;
 
 
 @Service
 public class ImageService {
+
+    private final String baseUrl = ServletUriComponentsBuilder
+                        .fromCurrentContextPath()
+                        .build()
+                        .toUriString();
     
     public void validateImageType(String contentType){
         if (!List.of("image/png", "image/jpeg", "image/webp").contains(contentType)) {
@@ -69,5 +78,38 @@ public class ImageService {
         } catch (MalformedURLException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error while loading image");
         }
+    }
+
+    public String generateCategoryImageUrl(Category category){
+
+        String imageUrl = null;
+        String imagePathStr = category.getImageUrl();
+        if (category.getImageUrl() != null) {
+            try {
+                Path fullPath = Paths.get(imagePathStr.replaceFirst("^/(?!/)", ""));
+                String fileName = fullPath.getFileName().toString();
+                imageUrl = baseUrl + "/menu/categoryImages/" + fileName;
+            } catch (Exception e) {
+                e.printStackTrace();
+                imageUrl = null;
+            }
+        }
+        return imageUrl;
+    }
+
+     public String generateItemImageUrl(String image){
+
+        String imageUrl = null;
+        if (image != null) {
+            try {
+                Path fullPath = Paths.get(image.replaceFirst("^/(?!/)", ""));
+                String fileName = fullPath.getFileName().toString();
+                imageUrl = baseUrl + "/menu/itemImages/" + fileName;
+            } catch (Exception e) {
+                e.printStackTrace();
+                imageUrl = null;
+            }
+        }
+        return imageUrl;
     }
 }
