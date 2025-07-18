@@ -13,9 +13,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.transaction.Transactional;
+import lapes.cesupa.ps_backend.dto.AddItemPhoto;
 import lapes.cesupa.ps_backend.dto.CreateItem;
 import lapes.cesupa.ps_backend.dto.GetItemResponse;
 import lapes.cesupa.ps_backend.dto.ListItemResponse;
@@ -126,6 +128,38 @@ public class ItemService {
 
         item.setUpdatedAt(LocalDateTime.now());
 
+        return itemRepository.save(item);
+    }
+
+    public Item addPhoto(Long id, AddItemPhoto dto){
+        var item = validateItemId(id);
+
+        if (dto.files() == null || dto.files().length == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No files uploaded");
+        
+        }
+        for(MultipartFile file: dto.files()){
+            imageService.validateImageType(file.getContentType());
+        }
+
+        List<ItemImage> existingImages = item.getImages();
+        int total = existingImages.size() + dto.files().length;
+        if (total > 5) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "max 5 photos allowed per item");
+        }
+
+        int startPosition = existingImages.size() + 1;
+
+        for (MultipartFile file : dto.files()) {
+            String path = imageService.storeImage(uploadItemsDir, file);
+
+            ItemImage image = new ItemImage();
+            image.setUrl(path);
+            image.setPosition(startPosition++);
+            image.setItem(item);  
+
+            item.getImages().add(image);
+        }
         return itemRepository.save(item);
     }
 

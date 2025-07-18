@@ -3,6 +3,7 @@ package lapes.cesupa.ps_backend.controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import lapes.cesupa.ps_backend.dto.AddItemPhoto;
 import lapes.cesupa.ps_backend.dto.CreateCategory;
 import lapes.cesupa.ps_backend.dto.CreateItem;
 import lapes.cesupa.ps_backend.dto.GetItemResponse;
@@ -137,6 +138,14 @@ public class MenuController {
         itemService.disableItem(id);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/items/{id}/photos")
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    public ResponseEntity<Void> addItemPhoto(@PathVariable Long id,@ModelAttribute AddItemPhoto dto) {
+        itemService.addPhoto(id, dto);
+        return ResponseEntity.ok().build();
+    }
+    
 
     
     
