@@ -13,7 +13,7 @@ public class ItemImage {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Long id;
 
     @Column(nullable = false)
     private String url;
@@ -25,11 +25,11 @@ public class ItemImage {
     @JoinColumn(name = "item_id")
     private Item item;
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

@@ -145,6 +145,13 @@ public class MenuController {
         itemService.addPhoto(id, dto);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/items/{id}/photos/{photoId}")
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    public ResponseEntity<Void> deleteItemPhoto(@PathVariable Long id, @PathVariable Long photoId){
+        itemService.deletePhoto(id, photoId);
+        return ResponseEntity.ok().build();
+    }
     
 
     

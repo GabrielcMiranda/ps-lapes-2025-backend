@@ -128,6 +128,7 @@ public class ItemService {
         return itemRepository.save(item);
     }
 
+    @Transactional
     public Item addPhoto(Long id, AddItemPhoto dto){
         var item = validateItemId(id);
 
@@ -164,6 +165,26 @@ public class ItemService {
     public Item disableItem(Long id){
         var item = validateItemId(id);
         item.setAvailable(false);
+        return itemRepository.save(item);
+    }
+    @Transactional
+    public Item deletePhoto(Long id, Long photoId){
+        var item = validateItemId(id);
+
+        var images = item.getImages();
+
+        ItemImage imageToRemove = images.stream()
+            .filter(img -> img.getId().equals(photoId))
+            .findFirst()
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Photo not found for this item"));
+
+        images.remove(imageToRemove);
+
+        int pos = 1;
+        for (ItemImage img : images.stream().sorted(Comparator.comparing(ItemImage::getPosition)).toList()) {
+            img.setPosition(pos++);
+        }
+
         return itemRepository.save(item);
     }
 
