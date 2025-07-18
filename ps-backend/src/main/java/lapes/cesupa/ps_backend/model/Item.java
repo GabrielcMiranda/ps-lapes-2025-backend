@@ -16,8 +16,10 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import lombok.Data;
 
 @Entity
+@Data
 @Table(name = "items")
 public class Item {
     
@@ -56,95 +58,4 @@ public class Item {
     @OrderBy("position ASC")
     private List<ItemImage> images = new ArrayList<>();
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Integer getPriceInCents() {
-        return priceInCents;
-    }
-
-    public void setPriceInCents(Integer priceInCents) {
-        this.priceInCents = priceInCents;
-    }
-
-    public Integer getEstimatedPreptime() {
-        return estimatedPreptime;
-    }
-
-    public void setEstimatedPreptime(Integer estimatedPreptime) {
-        this.estimatedPreptime = estimatedPreptime;
-    }
-
-    public boolean isAvailable() {
-        return isAvailable;
-    }
-
-    public void setAvailable(boolean isAvailable) {
-        this.isAvailable = isAvailable;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public LocalDateTime getUpdatedAt() {
-        return updatedAt;
-    }
-
-    public void setUpdatedAt(LocalDateTime updatedAt) {
-        this.updatedAt = updatedAt;
-    }
-
-    public List<Category> getCategories() {
-        return categories;
-    }
-
-    public void setCategories(List<Category> categories) {
-        this.categories = categories;
-    }
-
-    public List<ItemImage> getImages() {
-        return images;
-    }
-
-    public void setImages(List<ItemImage> images) {
-        this.images = images;
-    }
-
-    public String getExtraAttributes() {
-        return extraAttributes;
-    }
-
-    public void setExtraAttributes(String extraAttributes) {
-        this.extraAttributes = extraAttributes;
-    }
-
-    
-
-    
 }

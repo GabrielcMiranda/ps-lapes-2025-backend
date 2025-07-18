@@ -20,8 +20,10 @@ import lapes.cesupa.ps_backend.model.Role;
 import lapes.cesupa.ps_backend.model.User;
 import lapes.cesupa.ps_backend.repository.RoleRepository;
 import lapes.cesupa.ps_backend.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -31,13 +33,6 @@ public class AuthService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     private final TokenService tokenService;
-
-    public AuthService(UserRepository userRepository, RoleRepository roleRepository, BCryptPasswordEncoder bCryptPasswordEncoder, TokenService tokenService){
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
-        this.tokenService = tokenService;
-    }
 
     public LoginResponse login(LoginRequest dto){
          var user = validateLogin(dto);
@@ -67,7 +62,7 @@ public class AuthService {
     @Transactional
     public User createUser(CreateUser dto){
         var costumerRole = roleRepository.findByName(Role.Values.COSTUMER.name());
-        postUserValidation(dto.username());
+        postUserValidation(dto.username(),dto.email());
 
         var now = LocalDateTime.now();
         var user = new User();
@@ -90,7 +85,7 @@ public class AuthService {
         return new ProfileResponse(user.getUsername(),user.getEmail(), roles, user.getPhone());
     }
 
-    private Optional<User> validateUserId(String id){
+    public Optional<User> validateUserId(String id){
         var user = userRepository.findById(UUID.fromString(id));
         
         if(user.isEmpty()){
@@ -100,7 +95,8 @@ public class AuthService {
     }
 
     private Optional<User> validateLogin(LoginRequest dto){
-        var user = findByUsernameOrEmail(dto.login());
+        var user = userRepository.findByUsername(dto.login())
+        .or(() -> userRepository.findByEmail(dto.login()));
         
         if(user.isEmpty() || !user.get().isLoginCorrect(dto, bCryptPasswordEncoder)){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid user or password");
@@ -108,17 +104,11 @@ public class AuthService {
         return user;
     }
 
-    private Optional<User> postUserValidation(String login){
-        var user = findByUsernameOrEmail(login);
+    private void postUserValidation(String username, String email){
+        boolean exists = userRepository.existsByUsername(username) || userRepository.existsByEmail(email);
         
-        if(user.isPresent()){
+        if(exists){
             throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "username or email already exist");
         }
-        return user;
     }
-
-    private Optional<User> findByUsernameOrEmail(String login){
-    return userRepository.findByUsername(login)
-        .or(() -> userRepository.findByEmail(login));
-}
 }

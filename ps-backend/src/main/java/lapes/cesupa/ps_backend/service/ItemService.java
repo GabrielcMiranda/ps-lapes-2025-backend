@@ -3,9 +3,6 @@ package lapes.cesupa.ps_backend.service;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
-import java.util.Locale.Category;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -55,7 +52,7 @@ public class ItemService {
         item.setPriceInCents(dto.priceInCents());
         item.setCategories(categories);
         item.setEstimatedPreptime(dto.estimatedPrepTime());
-        item.setAvailable(dto.isAvailable());
+        item.setIsAvailable(dto.isAvailable());
         item.setExtraAttributes(dto.extraAttributes());
         item.setCreatedAt(now);
         item.setUpdatedAt(now);
@@ -87,7 +84,7 @@ public class ItemService {
         var item = validateItemId(id);
         List<String> imageUrls = imageService.listItemImageUrls(item);
 
-        return new GetItemResponse(item.getName(),item.getDescription(),imageUrls,item.isAvailable());
+        return new GetItemResponse(item.getName(),item.getDescription(),imageUrls,item.getIsAvailable());
     }
 
     @Transactional
@@ -116,7 +113,7 @@ public class ItemService {
         }
 
         if (dto.isAvailable() != null) {
-            item.setAvailable(dto.isAvailable());
+            item.setIsAvailable(dto.isAvailable());
         }
 
         if(dto.extraAttributes()!=null && !dto.extraAttributes().isBlank()){
@@ -164,7 +161,7 @@ public class ItemService {
     @Transactional
     public Item disableItem(Long id){
         var item = validateItemId(id);
-        item.setAvailable(false);
+        item.setIsAvailable(false);
         return itemRepository.save(item);
     }
     @Transactional
@@ -196,7 +193,7 @@ public class ItemService {
         }
     }
 
-    private Item validateItemId(Long id){
+    public Item validateItemId(Long id){
         var item = itemRepository.findById(id);
         if(item.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "item not found");
