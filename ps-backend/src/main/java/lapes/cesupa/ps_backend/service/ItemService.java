@@ -77,18 +77,15 @@ public class ItemService {
                     i.getName(),
                     i.getDescription(),
                     i.getPriceInCents(),
-                    i.isAvailable()
+                    i.getEstimatedPreptime(),
+                    imageService.listItemImageUrls(i),
+                    i.getExtraAttributes()
                 ));
     }
 
     public GetItemResponse get(Long id){
         var item = validateItemId(id);
-        List<String> imageUrls = Optional.ofNullable(item.getImages())
-            .orElse(List.of()) // lista vazia
-            .stream()
-            .sorted(Comparator.comparing(ItemImage::getPosition))
-            .map(img -> imageService.generateItemImageUrl(img.getUrl()))
-            .collect(Collectors.toList());
+        List<String> imageUrls = imageService.listItemImageUrls(item);
 
         return new GetItemResponse(item.getName(),item.getDescription(),imageUrls,item.isAvailable());
     }

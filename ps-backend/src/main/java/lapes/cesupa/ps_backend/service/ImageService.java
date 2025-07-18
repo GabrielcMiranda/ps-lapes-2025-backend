@@ -6,8 +6,11 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -21,6 +24,8 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import lapes.cesupa.ps_backend.model.Category;
+import lapes.cesupa.ps_backend.model.Item;
+import lapes.cesupa.ps_backend.model.ItemImage;
 
 
 @Service
@@ -107,7 +112,7 @@ public class ImageService {
                                 .fromCurrentContextPath()
                                 .build()
                                 .toUriString();
-                                
+
                 Path fullPath = Paths.get(image.replaceFirst("^/(?!/)", ""));
                 String fileName = fullPath.getFileName().toString();
                 imageUrl = baseUrl + "/menu/itemImages/" + fileName;
@@ -117,5 +122,17 @@ public class ImageService {
             }
         }
         return imageUrl;
+    }
+
+    public List<String> listItemImageUrls(Item item){
+        List<String> imageUrls = Optional.ofNullable(item.getImages())
+            .orElse(List.of()) 
+            .stream()
+            .sorted(Comparator.comparing(ItemImage::getPosition))
+            .map(img -> generateItemImageUrl(img.getUrl()))
+            .collect(Collectors.toList());
+
+        return imageUrls;
+    
     }
 }
