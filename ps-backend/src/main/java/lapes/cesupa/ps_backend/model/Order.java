@@ -48,8 +48,9 @@ public class Order {
 
     private LocalDateTime UpdatedAt;
 
-    @Column(nullable = false)
-    private String receiver;
+    @ManyToOne
+    @JoinColumn(name = "receiver_id", nullable = false)
+    private User receiver;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

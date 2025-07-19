@@ -51,17 +51,17 @@ public class AuthService {
         var userId = decodedRefreshToken.getSubject();
         var user = validateUserId(userId);
 
-        var loggedUser = user.get();
-
-        var jwtAccessValue = tokenService.generateAccessToken(loggedUser);
-        var jwtRefreshValue = tokenService.generateRefreshToken(loggedUser);
+        var jwtAccessValue = tokenService.generateAccessToken(user);
+        var jwtRefreshValue = tokenService.generateRefreshToken(user);
 
         return new LoginResponse(jwtAccessValue, TokenService.ACCESS_EXPIRATION, jwtRefreshValue, TokenService.REFRESH_EXPIRATION);
     }
 
     @Transactional
     public User createUser(CreateUser dto){
-        var costumerRole = roleRepository.findByName(Role.Values.COSTUMER.name());
+        var costumerRole = roleRepository.findById(4L)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "role not found"));
+
         postUserValidation(dto.username(),dto.email());
 
         var now = LocalDateTime.now();
@@ -78,20 +78,21 @@ public class AuthService {
     }
 
     public ProfileResponse profile(String userId){
-        var user = validateUserId(userId).get();
+        var user = validateUserId(userId);
 
         var roles = user.getRoles().stream().map(Role::getName).toList();
 
         return new ProfileResponse(user.getUsername(),user.getEmail(), roles, user.getPhone());
     }
 
-    public Optional<User> validateUserId(String id){
-        var user = userRepository.findById(UUID.fromString(id));
-        
-        if(user.isEmpty()){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found");
-        }
-        return user;
+    public User validateUserId(String id){
+        return userRepository.findById(UUID.fromString(id))
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
+    }
+
+     public User validateUserUUID(UUID id){
+        return userRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
     }
 
     private Optional<User> validateLogin(LoginRequest dto){

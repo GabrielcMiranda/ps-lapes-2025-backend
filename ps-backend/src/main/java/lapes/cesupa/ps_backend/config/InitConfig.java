@@ -4,8 +4,10 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.annotation.PostConstruct;
 import lapes.cesupa.ps_backend.model.Address;
@@ -40,7 +42,8 @@ public class InitConfig implements CommandLineRunner {
 
     private void addAdmin(){
 
-        var roleAdmin = roleRepository.findByName(Role.Values.ADMIN.name());
+        var roleAdmin = roleRepository.findById(1L)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "role not found"));
 
         var userAdmin = userRepository.findByUsername("admin");
 
@@ -63,7 +66,8 @@ public class InitConfig implements CommandLineRunner {
 
     private void addKitchen(){
 
-        var roleKitchen = roleRepository.findByName(Role.Values.KITCHEN.name());
+        var roleKitchen = roleRepository.findById(2L)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "role not found"));
 
         var userKitchen = userRepository.findByUsername("kitchen");
 
@@ -85,7 +89,7 @@ public class InitConfig implements CommandLineRunner {
     }
 
     private void addTakeawayAddress(){
-        var address = addressRepository.findById(9L);
+        var address = addressRepository.findById(1L);
 
         if (address.isEmpty()) {
             var takeAddress = takeawayAddress.toAddress();

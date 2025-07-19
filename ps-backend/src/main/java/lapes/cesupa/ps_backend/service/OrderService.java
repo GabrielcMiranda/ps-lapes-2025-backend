@@ -3,12 +3,15 @@ package lapes.cesupa.ps_backend.service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.transaction.Transactional;
-import lapes.cesupa.ps_backend.config.TakeawayAddressProperties;
 import lapes.cesupa.ps_backend.dto.CreateOrderRequest;
 import lapes.cesupa.ps_backend.dto.ItemResponse;
 import lapes.cesupa.ps_backend.dto.OrderItemRequest;
@@ -20,6 +23,7 @@ import lapes.cesupa.ps_backend.repository.AddressRepository;
 import lapes.cesupa.ps_backend.model.Order.OrderStatus;
 import lapes.cesupa.ps_backend.model.Order.OrderType;
 import lapes.cesupa.ps_backend.repository.OrderRepository;
+import lapes.cesupa.ps_backend.specification.OrderSpecifications;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -53,14 +57,10 @@ public class OrderService {
         }
 
         var now = LocalDateTime.now();
-        String receiver = user.get().getUsername();
-        if(dto.receiver()!= null && dto.receiver().isBlank()){
-            receiver = dto.receiver();
-        }
 
         Order order = new Order();
         order.setOrderType(dto.orderType());
-        order.setReceiver(receiver);
+        order.setReceiver(user);
         order.setNotes(dto.notes());
         order.setCreatedAt(now);
         order.setUpdatedAt(now);
@@ -79,7 +79,7 @@ public class OrderService {
             addressRepository.save(address);
             order.setAddress(address);
         }else{
-            var takeawayAddress = addressRepository.findById(9L)
+            var takeawayAddress = addressRepository.findById(1L)
                 .orElseThrow(() -> new RuntimeException("Takeaway address not configured"));
 
             order.setAddress(takeawayAddress);
@@ -107,7 +107,7 @@ public class OrderService {
         return new OrderResponse(
             savedOrder.getId(),
             savedOrder.getOrderType(),
-            savedOrder.getReceiver(),
+            savedOrder.getReceiver().getUsername(),
             addressStr,
             itemResponses,
             savedOrder.getNotes(),
@@ -115,4 +115,39 @@ public class OrderService {
         );
     }
 
+    public List<OrderResponse> listAll(String id, OrderStatus status, LocalDateTime startDate, LocalDateTime endDate) {
+
+        var user = authService.validateUserId(id);
+
+        var spec = Specification.<Order>where(null)
+                .and(OrderSpecifications.hasReceiver(user))
+                .and(OrderSpecifications.hasStatus(status))
+                .and(OrderSpecifications.createdAfter(startDate))
+                .and(OrderSpecifications.createdBefore(endDate));
+
+        var orders = orderRepository.findAll(spec).stream().filter(order -> order.getReceiver().equals(user));
+
+        return orders.map(order -> {
+            List<ItemResponse> items = order.getItems().stream().map(item -> new ItemResponse(
+                    item.getItem().getId(),
+                    item.getItem().getName(),
+                    item.getQuantity(),
+                    item.getPrice())
+                ).toList();
+
+    String addressStr = order.getAddress() != null
+            ? order.getAddress().getStreet() + ", " + order.getAddress().getNumber()
+            : null;
+
+    return new OrderResponse(
+            order.getId(),
+            order.getOrderType(),
+            order.getReceiver().getUsername(),
+            addressStr,
+            items,
+            order.getNotes(),
+            order.getOrderStatus()
+            );
+        }).toList();
+    }
 }

@@ -10,7 +10,7 @@ import lapes.cesupa.ps_backend.model.Item;
 
 
 @Repository
-public interface ItemRepository extends JpaRepository<Item,Long>,  JpaSpecificationExecutor<Item> {
+public interface ItemRepository extends JpaRepository<Item,Long>, JpaSpecificationExecutor<Item> {
     
     Optional<Item> findByName(String name);
 }
