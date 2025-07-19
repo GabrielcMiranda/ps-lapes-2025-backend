@@ -20,6 +20,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 
 
@@ -41,6 +42,7 @@ public class OrderController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAuthority('SCOPE_COSTUMER')")
     public ResponseEntity<List<OrderResponse>> listOrders(
         @AuthenticationPrincipal Jwt jwt,
         @RequestParam(required = false) OrderStatus status,
@@ -50,6 +52,14 @@ public class OrderController {
         var orders = orderService.listAll(jwt.getSubject(), status, startDate, endDate);
         return ResponseEntity.ok(orders);
     }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('SCOPE_COSTUMER')")
+    public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id,@AuthenticationPrincipal Jwt jwt) {
+        var order = orderService.get(jwt.getSubject(), id);
+        return ResponseEntity.ok(order);
+    }
+    
     
     
     

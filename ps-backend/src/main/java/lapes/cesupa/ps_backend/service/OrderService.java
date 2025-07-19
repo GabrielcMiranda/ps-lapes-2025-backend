@@ -150,4 +150,33 @@ public class OrderService {
             );
         }).toList();
     }
+
+    public OrderResponse get(String userId, Long orderId){
+        var user = authService.validateUserId(userId);
+        var userOrder = orderRepository.findById(orderId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "order not found"));
+
+        if(!userOrder.getReceiver().getId().equals(user.getId())){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "user does not have permission for that order");
+        }
+
+        List<ItemResponse> items = userOrder.getItems().stream().map(item -> new ItemResponse(
+                    item.getItem().getId(),
+                    item.getItem().getName(),
+                    item.getQuantity(),
+                    item.getPrice())
+                ).toList();
+
+        String addressStr = userOrder.getAddress() != null
+            ? userOrder.getAddress().getStreet() + ", " + userOrder.getAddress().getNumber()
+            : null;
+
+        return new OrderResponse(userOrder.getId(),
+            userOrder.getOrderType(),
+            userOrder.getReceiver().getUsername(),
+            addressStr,
+            items,
+            userOrder.getNotes(),
+            userOrder.getOrderStatus());
+    }
 }
