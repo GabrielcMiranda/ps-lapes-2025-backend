@@ -16,6 +16,7 @@ import lapes.cesupa.ps_backend.dto.OrderResponse;
 import lapes.cesupa.ps_backend.model.Address;
 import lapes.cesupa.ps_backend.model.Order;
 import lapes.cesupa.ps_backend.model.OrderItem;
+import lapes.cesupa.ps_backend.repository.AddressRepository;
 import lapes.cesupa.ps_backend.model.Order.OrderStatus;
 import lapes.cesupa.ps_backend.model.Order.OrderType;
 import lapes.cesupa.ps_backend.repository.OrderRepository;
@@ -25,13 +26,13 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OrderService {
 
+    private final AddressRepository addressRepository;
+
     private final ItemService itemService;
 
     private final AuthService authService;
 
     private final OrderRepository orderRepository;
-
-    private final TakeawayAddressProperties takeawayAddress;
 
     @Transactional
     public OrderResponse create(CreateOrderRequest dto, String userId){
@@ -70,14 +71,18 @@ public class OrderService {
             Address address = new Address();
             address.setStreet(dto.deliveryAddress().street());
             address.setNumber(dto.deliveryAddress().number());
-            address.setNeighborhood(dto.deliveryAddress().neighborhood());
+            address.setNeighbourhood(dto.deliveryAddress().neighborhood());
             address.setCity(dto.deliveryAddress().city());
             address.setState(dto.deliveryAddress().state());
             address.setZipCode(dto.deliveryAddress().zipCode());
             address.setComplement(dto.deliveryAddress().complement());
+            addressRepository.save(address);
             order.setAddress(address);
         }else{
-            order.setAddress(takeawayAddress.toAddress());
+            var takeawayAddress = addressRepository.findById(9L)
+                .orElseThrow(() -> new RuntimeException("Takeaway address not configured"));
+
+            order.setAddress(takeawayAddress);
         }
 
         for (OrderItem item : orderItems) {

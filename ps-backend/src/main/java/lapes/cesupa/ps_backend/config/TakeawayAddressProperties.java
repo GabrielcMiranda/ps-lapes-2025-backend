@@ -1,13 +1,11 @@
 package lapes.cesupa.ps_backend.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 import lapes.cesupa.ps_backend.model.Address;
 import lombok.Data;
 
 @Data
-@Component
 @ConfigurationProperties(prefix = "app.takeaway-address")
 public class TakeawayAddressProperties {
     private String street;
@@ -22,7 +20,7 @@ public class TakeawayAddressProperties {
         Address address = new Address();
         address.setStreet(this.street);
         address.setNumber(this.number);
-        address.setNeighborhood(this.neighbourhood);
+        address.setNeighbourhood(this.neighbourhood);
         address.setCity(this.city);
         address.setState(this.state);
         address.setZipCode(this.zipCode);

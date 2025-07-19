@@ -4,36 +4,38 @@ import java.time.LocalDateTime;
 import java.util.Set;
 
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Component;
 
-import jakarta.transaction.Transactional;
+import jakarta.annotation.PostConstruct;
+import lapes.cesupa.ps_backend.model.Address;
 import lapes.cesupa.ps_backend.model.Role;
 import lapes.cesupa.ps_backend.model.User;
+import lapes.cesupa.ps_backend.repository.AddressRepository;
 import lapes.cesupa.ps_backend.repository.RoleRepository;
 import lapes.cesupa.ps_backend.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 
-@Configuration
-public class AdminUserConfig implements CommandLineRunner {
+@Component
+@RequiredArgsConstructor
+public class InitConfig implements CommandLineRunner {
 
-    private RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    private BCryptPasswordEncoder passwordEncoder;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public AdminUserConfig(RoleRepository roleRepository, UserRepository userRepository,
-            BCryptPasswordEncoder passwordEncoder) {
-        this.roleRepository = roleRepository;
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    private final TakeawayAddressProperties takeawayAddress;
+
+    private final AddressRepository addressRepository;
 
     @Override
-    @Transactional
     public void run(String... args) throws Exception {
+        checkTakeawayAddressProperties();
         addAdmin();
         addKitchen();
+        addTakeawayAddress();
     }
 
     private void addAdmin(){
@@ -80,5 +82,25 @@ public class AdminUserConfig implements CommandLineRunner {
                 userRepository.save(user);
             }
             );
+    }
+
+    private void addTakeawayAddress(){
+        var address = addressRepository.findById(9L);
+
+        if (address.isEmpty()) {
+            var takeAddress = takeawayAddress.toAddress();
+            Address saved = addressRepository.save(takeAddress);
+            System.out.println("takeaway address created: id=" + saved.getId());
+            System.out.println(saved.toString());
+        } else {
+            System.out.println("takeaway address already registered");
+            System.out.println(address.toString());
+        }
+    }
+
+    @PostConstruct
+    public void checkTakeawayAddressProperties() {
+        System.out.println("[DEBUG] TakeawayAddressProperties bean foi carregado? " + takeawayAddress);
+        System.out.println("[DEBUG] Street: " + takeawayAddress.getStreet());
     }
 }
