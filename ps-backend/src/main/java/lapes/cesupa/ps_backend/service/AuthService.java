@@ -26,6 +26,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthService {
 
+    private final EmailService emailService;
+
     private final UserRepository userRepository;
 
     private final RoleRepository roleRepository;
