@@ -26,6 +26,7 @@ import lapes.cesupa.ps_backend.model.Order.OrderStatus;
 import lapes.cesupa.ps_backend.model.Order.OrderType;
 import lapes.cesupa.ps_backend.repository.OrderRepository;
 import lapes.cesupa.ps_backend.repository.RoleRepository;
+import lapes.cesupa.ps_backend.repository.UserRepository;
 import lapes.cesupa.ps_backend.specification.OrderSpecifications;
 import lombok.RequiredArgsConstructor;
 
@@ -43,9 +44,15 @@ public class OrderService {
 
     private final RoleRepository roleRepository;
 
+    private final EmailService emailService;
+
+    private final UserRepository userRepository;
+
     @Transactional
     public OrderResponse create(CreateOrderRequest dto, String userId){
         var user = authService.validateUserId(userId);
+        var kitchen = userRepository.findByUsername("kitchen")
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
         List<OrderItem> orderItems = new ArrayList<>();
         for(OrderItemRequest i: dto.items()){
 
@@ -108,7 +115,9 @@ public class OrderService {
         String addressStr = (savedOrder.getAddress() != null)
             ? savedOrder.getAddress().getStreet() + ", " + savedOrder.getAddress().getNumber()
             : null;
-
+        
+        emailService.sendEmail(user.getEmail(), "new order", "your order will be prepared soon");
+        emailService.sendEmail(kitchen.getEmail(), "new order", "a new order was sent. id: "+savedOrder.getId());
         return new OrderResponse(
             savedOrder.getId(),
             savedOrder.getOrderType(),
@@ -219,8 +228,23 @@ public class OrderService {
         var order = orderRepository.findById(orderId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "order not found"));
         
+        var kitchen = userRepository.findByUsername("kitchen")
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
+
+        var admin = userRepository.findByUsername("admin")
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user not found"));
+        
         order.setOrderStatus(status);
         order.setUpdatedAt(LocalDateTime.now());
+        String sendTo;
+
+        if(status.equals(OrderStatus.IN_PREPARATION) || status.equals(OrderStatus.READY)){
+            sendTo = kitchen.getEmail();
+        }else{
+            sendTo = admin.getEmail();
+        }
+
+        emailService.sendEmail(sendTo, "updated order status", "order n: "+order.getId()+" new status: "+status);
         return orderRepository.save(order);
     }
 
