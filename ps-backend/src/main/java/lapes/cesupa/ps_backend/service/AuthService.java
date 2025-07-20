@@ -107,7 +107,7 @@ public class AuthService {
         return user;
     }
 
-    private void postUserValidation(String username, String email){
+    public void postUserValidation(String username, String email){
         boolean exists = userRepository.existsByUsername(username) || userRepository.existsByEmail(email);
         
         if(exists){
