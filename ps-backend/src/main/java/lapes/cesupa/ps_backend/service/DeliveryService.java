@@ -72,7 +72,7 @@ public class DeliveryService {
 
         double distance = addressService.calculateDistance(restaurantLat, restaurantLon, clientCoord.latitude(), clientCoord.longitude());
         System.out.println("distance: "+distance);
-        var taxes = addressService.calculateTaxes(distance);
+        var taxes = addressService.calculateTaxes(distance)*100;
         return new DeliveryCalculateResponse(distance, taxes);
     }
 

@@ -7,7 +7,7 @@ public class AddressService {
 
     private final Double TAX_CONST = 0.75;
 
-    public Double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+    public double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
         final int R = 6371;
         double dLat = Math.toRadians(lat2 - lat1);
         double dLon = Math.toRadians(lon2 - lon1);
