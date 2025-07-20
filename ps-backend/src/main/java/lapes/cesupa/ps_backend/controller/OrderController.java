@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lapes.cesupa.ps_backend.dto.CreateOrderRequest;
 import lapes.cesupa.ps_backend.dto.OrderResponse;
+import lapes.cesupa.ps_backend.dto.TrackOrderResponse;
 import lapes.cesupa.ps_backend.model.Order.OrderStatus;
 import lapes.cesupa.ps_backend.service.OrderService;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,6 +59,13 @@ public class OrderController {
     public ResponseEntity<OrderResponse> getOrder(@PathVariable Long id,@AuthenticationPrincipal Jwt jwt) {
         var order = orderService.get(jwt.getSubject(), id);
         return ResponseEntity.ok(order);
+    }
+
+     @GetMapping("/{id}/confirm")
+    @PreAuthorize("hasAuthority('SCOPE_COSTUMER')")
+    public ResponseEntity<Void> confirmOrder(@PathVariable Long id,@AuthenticationPrincipal Jwt jwt) {
+        var order = orderService.confirm(jwt.getSubject(), id);
+        return ResponseEntity.ok().build();
     }
     
     

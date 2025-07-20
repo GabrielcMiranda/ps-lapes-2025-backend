@@ -1,6 +1,7 @@
 package lapes.cesupa.ps_backend.service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -16,6 +17,7 @@ import lapes.cesupa.ps_backend.dto.CreateOrderRequest;
 import lapes.cesupa.ps_backend.dto.ItemResponse;
 import lapes.cesupa.ps_backend.dto.OrderItemRequest;
 import lapes.cesupa.ps_backend.dto.OrderResponse;
+import lapes.cesupa.ps_backend.dto.TrackOrderResponse;
 import lapes.cesupa.ps_backend.model.Address;
 import lapes.cesupa.ps_backend.model.Order;
 import lapes.cesupa.ps_backend.model.OrderItem;
@@ -178,5 +180,31 @@ public class OrderService {
             items,
             userOrder.getNotes(),
             userOrder.getOrderStatus());
+    }
+
+    public TrackOrderResponse track(String userId, Long orderId){
+        var user = authService.validateUserId(userId);
+        var userOrder = orderRepository.findById(orderId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "order not found"));
+
+        if(!userOrder.getReceiver().getId().equals(user.getId())){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "user does not have permission for that order");
+        }
+
+        return new TrackOrderResponse(userOrder.getId(), userOrder.getOrderStatus(), userOrder.getUpdatedAt().atZone(ZoneOffset.UTC).toInstant());
+    }
+
+    @Transactional
+    public Order confirm(String userId, Long orderId){
+        var user = authService.validateUserId(userId);
+        var userOrder = orderRepository.findById(orderId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "order not found"));
+
+        if(!userOrder.getReceiver().getId().equals(user.getId())){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "user does not have permission for that order");
+        }
+
+        userOrder.setOrderStatus(OrderStatus.DELIVERED);
+        return orderRepository.save(userOrder);
     }
 }
