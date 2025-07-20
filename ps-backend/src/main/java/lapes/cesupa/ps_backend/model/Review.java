@@ -33,5 +33,7 @@ public class Review {
 
     private String comment;
 
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }

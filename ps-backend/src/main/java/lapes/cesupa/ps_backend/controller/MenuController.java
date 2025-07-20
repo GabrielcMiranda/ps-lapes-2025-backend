@@ -9,9 +9,11 @@ import lapes.cesupa.ps_backend.dto.CreateItem;
 import lapes.cesupa.ps_backend.dto.GetItemResponse;
 import lapes.cesupa.ps_backend.dto.ListCategoriesResponse;
 import lapes.cesupa.ps_backend.dto.ListItemResponse;
+import lapes.cesupa.ps_backend.dto.ReviewResponse;
 import lapes.cesupa.ps_backend.service.CategoryService;
 import lapes.cesupa.ps_backend.service.ImageService;
 import lapes.cesupa.ps_backend.service.ItemService;
+import lapes.cesupa.ps_backend.service.ReviewService;
 
 import java.util.List;
 
@@ -37,6 +39,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/menu")
 public class MenuController {
 
+    private final ReviewService reviewService;
+
     private final ImageService imageService;
 
     private final ItemService itemService;
@@ -47,12 +51,17 @@ public class MenuController {
 
     private final String uploadItemsDir;
 
-    public MenuController(CategoryService categoryService, ItemService itemService, ImageService imageService, @Value("${app.upload.categories-path}") String uploadCategoriesDir, @Value("${app.upload.items-path}") String uploadItemsdir) {
+    public MenuController(CategoryService categoryService, ItemService itemService, ImageService imageService,
+    @Value("${app.upload.categories-path}") String uploadCategoriesDir,
+    @Value("${app.upload.items-path}") String uploadItemsdir,
+    ReviewService reviewService) {
+
         this.categoryService = categoryService;
         this.itemService = itemService;
         this.imageService = imageService;
         this.uploadCategoriesDir = uploadCategoriesDir;
         this.uploadItemsDir = uploadItemsdir;
+        this.reviewService = reviewService;
     }
 
     @PostMapping("/categories")
@@ -152,6 +161,13 @@ public class MenuController {
         itemService.deletePhoto(id, photoId);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/items/{id}/reviews")
+    public ResponseEntity<List<ReviewResponse>> listReviews(@PathVariable Long id) {
+        var reviews = reviewService.listByItem(id);
+        return ResponseEntity.ok(reviews);
+    }
+    
     
 
     
