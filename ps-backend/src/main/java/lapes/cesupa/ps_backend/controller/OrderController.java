@@ -43,7 +43,7 @@ public class OrderController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAuthority('SCOPE_COSTUMER')")
+    @PreAuthorize("hasAnyAuthority('SCOPE_COSTUMER', 'SCOPE_KITCHEN', 'SCOPE_ADMIN')")
     public ResponseEntity<List<OrderResponse>> listOrders(
         @AuthenticationPrincipal Jwt jwt,
         @RequestParam(required = false) OrderStatus status,

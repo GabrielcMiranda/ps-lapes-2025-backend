@@ -21,10 +21,12 @@ import lapes.cesupa.ps_backend.dto.TrackOrderResponse;
 import lapes.cesupa.ps_backend.model.Address;
 import lapes.cesupa.ps_backend.model.Order;
 import lapes.cesupa.ps_backend.model.OrderItem;
+import lapes.cesupa.ps_backend.model.Role;
 import lapes.cesupa.ps_backend.repository.AddressRepository;
 import lapes.cesupa.ps_backend.model.Order.OrderStatus;
 import lapes.cesupa.ps_backend.model.Order.OrderType;
 import lapes.cesupa.ps_backend.repository.OrderRepository;
+import lapes.cesupa.ps_backend.repository.RoleRepository;
 import lapes.cesupa.ps_backend.specification.OrderSpecifications;
 import lombok.RequiredArgsConstructor;
 
@@ -39,6 +41,8 @@ public class OrderService {
     private final AuthService authService;
 
     private final OrderRepository orderRepository;
+
+    private final RoleRepository roleRepository;
 
     @Transactional
     public OrderResponse create(CreateOrderRequest dto, String userId){
@@ -118,16 +122,19 @@ public class OrderService {
     }
 
     public List<OrderResponse> listAll(String id, OrderStatus status, LocalDateTime startDate, LocalDateTime endDate) {
-
+        var costumerRole = roleRepository.findById(4L)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "role not found"));
         var user = authService.validateUserId(id);
-
         var spec = Specification.<Order>where(null)
-                .and(OrderSpecifications.hasReceiver(user))
                 .and(OrderSpecifications.hasStatus(status))
                 .and(OrderSpecifications.createdAfter(startDate))
                 .and(OrderSpecifications.createdBefore(endDate));
-
-        var orders = orderRepository.findAll(spec).stream().filter(order -> order.getReceiver().equals(user));
+        
+        var orders = orderRepository.findAll(spec).stream();
+        
+        if(user.getRoles().contains(costumerRole)){
+            orders = orders.filter(order -> order.getReceiver().equals(user));
+        }
 
         return orders.map(order -> {
             List<ItemResponse> items = order.getItems().stream().map(item -> new ItemResponse(
