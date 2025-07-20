@@ -15,7 +15,9 @@ import org.springframework.web.server.ResponseStatusException;
 import lapes.cesupa.ps_backend.dto.CreateUser;
 import lapes.cesupa.ps_backend.dto.DeliveryCalculateResponse;
 import lapes.cesupa.ps_backend.dto.ListDeliveryManResponse;
+import lapes.cesupa.ps_backend.dto.UpdateDeliveryRequest;
 import lapes.cesupa.ps_backend.model.Order;
+import lapes.cesupa.ps_backend.model.Order.OrderStatus;
 import lapes.cesupa.ps_backend.model.Role;
 import lapes.cesupa.ps_backend.model.User;
 import lapes.cesupa.ps_backend.repository.AddressRepository;
@@ -115,5 +117,25 @@ public class DeliveryService {
         driver.setUpdated_at(now);
 
         return userRepository.save(driver);
+    }
+
+    public Order updateDriverStatus(Long orderId, UpdateDeliveryRequest dto){
+        var deliveryRole = roleRepository.findById(3L)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "role not found"));
+        var order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "order not found"));
+        var delivery_man = authService.validateUserUUID(dto.deliveryManId());
+
+        if(!delivery_man.getRoles().contains(deliveryRole)|| !order.getDeliveryMan().equals(delivery_man)){
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "user does not have permission to delivery"); 
+        }
+
+        if(!order.getOrderStatus().equals(OrderStatus.CANCELLED) && !order.getOrderStatus().equals(OrderStatus.DELIVERED)){
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "cannot free deliveryMan while the order is ongoing");
+        }
+
+        order.setDeliveryMan(null);
+        order.setUpdatedAt(LocalDateTime.now());
+        return orderRepository.save(order);
     }
 }

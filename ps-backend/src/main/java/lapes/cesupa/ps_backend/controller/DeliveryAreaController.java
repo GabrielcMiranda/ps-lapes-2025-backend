@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import lapes.cesupa.ps_backend.dto.CreateUser;
 import lapes.cesupa.ps_backend.dto.DeliveryCalculateResponse;
 import lapes.cesupa.ps_backend.dto.ListDeliveryManResponse;
+import lapes.cesupa.ps_backend.dto.UpdateDeliveryRequest;
 import lapes.cesupa.ps_backend.service.DeliveryService;
 import lombok.RequiredArgsConstructor;
 
@@ -17,6 +18,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
 
 
 
@@ -52,6 +56,13 @@ public class DeliveryAreaController {
     @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
     public ResponseEntity<Void> createDriver(@RequestBody CreateUser dto) {
         deliveryService.createDriver(dto);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/drivers/{id}/status")
+    @PreAuthorize("hasAuthority('SCOPE_ADMIN')")
+    public ResponseEntity<Void> updateDriverStatus(@PathVariable Long id, @RequestBody UpdateDeliveryRequest dto) {
+        deliveryService.updateDriverStatus(id, dto);
         return ResponseEntity.ok().build();
     }
     
