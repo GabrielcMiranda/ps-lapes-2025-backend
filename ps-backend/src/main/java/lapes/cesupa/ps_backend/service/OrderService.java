@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -18,10 +16,11 @@ import lapes.cesupa.ps_backend.dto.ItemResponse;
 import lapes.cesupa.ps_backend.dto.OrderItemRequest;
 import lapes.cesupa.ps_backend.dto.OrderResponse;
 import lapes.cesupa.ps_backend.dto.TrackOrderResponse;
+import lapes.cesupa.ps_backend.dto.UpdateDeliveryRequest;
+import lapes.cesupa.ps_backend.dto.UpdateOrderItems;
 import lapes.cesupa.ps_backend.model.Address;
 import lapes.cesupa.ps_backend.model.Order;
 import lapes.cesupa.ps_backend.model.OrderItem;
-import lapes.cesupa.ps_backend.model.Role;
 import lapes.cesupa.ps_backend.repository.AddressRepository;
 import lapes.cesupa.ps_backend.model.Order.OrderStatus;
 import lapes.cesupa.ps_backend.model.Order.OrderType;
@@ -213,5 +212,62 @@ public class OrderService {
 
         userOrder.setOrderStatus(OrderStatus.DELIVERED);
         return orderRepository.save(userOrder);
+    }
+
+    @Transactional
+    public Order updateStatus(Long orderId, OrderStatus status){
+        var order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "order not found"));
+        
+        order.setOrderStatus(status);
+        order.setUpdatedAt(LocalDateTime.now());
+        return orderRepository.save(order);
+    }
+
+    public Order updateItems(Long orderId, UpdateOrderItems dto){
+        var order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "order not found"));
+        
+        if(!order.getOrderStatus().equals(OrderStatus.PENDING)){
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "cannot edit order items while in preparation or further");
+        }
+
+        order.getItems().clear();
+        order.setUpdatedAt(LocalDateTime.now());
+        for (OrderItemRequest i : dto.items()) {
+            var item = itemService.validateItemId(i.id());
+            int priceSnapshot = item.getPriceInCents();
+
+            var orderItem = new OrderItem();
+            orderItem.setItem(item);
+            orderItem.setQuantity(i.quantity());
+            orderItem.setPrice(priceSnapshot);
+            orderItem.setOrder(order);
+
+            order.getItems().add(orderItem);
+        }
+            return orderRepository.save(order);
+        }
+
+    @Transactional
+    public Order updateDelivery(Long orderId, UpdateDeliveryRequest dto){
+        var deliveryRole = roleRepository.findById(3L)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "role not found"));
+        var order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "order not found"));
+        var delivery_man = authService.validateUserUUID(dto.deliveryManId());
+
+        if(!order.getOrderStatus().equals(OrderStatus.READY)){
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "cannot deliver while it is not ready");
+        }
+
+        if(!delivery_man.getRoles().contains(deliveryRole)){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "user does not have permission to delivery"); 
+        }
+
+        order.setDeliveryMan(delivery_man);
+        order.setOrderStatus(OrderStatus.DELIVERING);
+        order.setUpdatedAt(LocalDateTime.now());
+        return orderRepository.save(order);
     }
 }

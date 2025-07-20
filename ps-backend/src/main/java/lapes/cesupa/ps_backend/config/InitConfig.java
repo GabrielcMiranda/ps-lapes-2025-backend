@@ -37,6 +37,7 @@ public class InitConfig implements CommandLineRunner {
         checkTakeawayAddressProperties();
         addAdmin();
         addKitchen();
+        addDeliveryMan();
         addTakeawayAddress();
     }
 
@@ -100,6 +101,29 @@ public class InitConfig implements CommandLineRunner {
             System.out.println("takeaway address already registered");
             System.out.println(address.toString());
         }
+    }
+
+    private void addDeliveryMan(){
+        var roleDelivery = roleRepository.findById(3L)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "role not found"));
+
+        var deliveryMan = userRepository.findByUsername("delivery1");
+
+        deliveryMan.ifPresentOrElse(
+            user -> System.out.println("delivery1 is already logged"),
+            () -> {
+                var now = LocalDateTime.now();
+                var user = new User();
+                user.setUsername("delivery1");
+                user.setEmail("yagopatrick@gmail.com");
+                user.setPhone("559195527395");
+                user.setPassword(passwordEncoder.encode("123"));
+                user.setRoles(Set.of(roleDelivery));
+                user.setCreated_at(now);
+                user.setUpdated_at(now);
+                userRepository.save(user);
+            }
+            );
     }
 
     @PostConstruct

@@ -66,6 +66,7 @@ public class Order {
     PENDING,
     IN_PREPARATION,
     READY,
+    DELIVERING,
     DELIVERED,
     CANCELLED
     }
