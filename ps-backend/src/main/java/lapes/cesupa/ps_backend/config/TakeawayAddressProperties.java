@@ -15,6 +15,8 @@ public class TakeawayAddressProperties {
     private String state;
     private String zipCode;
     private String complement;
+    private double latitude;
+    private double longitude;
 
     public Address toAddress() {
         Address address = new Address();
@@ -25,6 +27,8 @@ public class TakeawayAddressProperties {
         address.setState(this.state);
         address.setZipCode(this.zipCode);
         address.setComplement(this.complement);
+        address.setLatitude(this.latitude);
+        address.setLongitude(this.longitude);
         return address;
     }
 }

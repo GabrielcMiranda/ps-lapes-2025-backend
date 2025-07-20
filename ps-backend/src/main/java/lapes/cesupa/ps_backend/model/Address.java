@@ -20,4 +20,6 @@ public class Address {
         private String state;
         private String zipCode;
         private String complement;
+        private double latitude;
+        private double longitude;
 }

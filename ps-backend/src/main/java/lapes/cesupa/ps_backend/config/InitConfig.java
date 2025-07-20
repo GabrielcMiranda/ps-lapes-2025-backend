@@ -11,7 +11,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.annotation.PostConstruct;
 import lapes.cesupa.ps_backend.model.Address;
-import lapes.cesupa.ps_backend.model.Role;
 import lapes.cesupa.ps_backend.model.User;
 import lapes.cesupa.ps_backend.repository.AddressRepository;
 import lapes.cesupa.ps_backend.repository.RoleRepository;
@@ -56,7 +55,7 @@ public class InitConfig implements CommandLineRunner {
                 user.setUsername("admin");
                 user.setEmail("gabrielcostademiranda@gmail.com");
                 user.setPhone("5591992981511");
-                user.setPassword(passwordEncoder.encode("123"));
+                user.setPassword(passwordEncoder.encode("Gabriel0606*"));
                 user.setRoles(Set.of(roleAdmin));
                 user.setCreated_at(now);
                 user.setUpdated_at(now);
@@ -80,7 +79,7 @@ public class InitConfig implements CommandLineRunner {
                 user.setUsername("kitchen");
                 user.setEmail("gabrielcostademiranda2@gmail.com");
                 user.setPhone("5591984145141");
-                user.setPassword(passwordEncoder.encode("123"));
+                user.setPassword(passwordEncoder.encode("Gabriel0606*"));
                 user.setRoles(Set.of(roleKitchen));
                 user.setCreated_at(now);
                 user.setUpdated_at(now);
@@ -105,7 +104,7 @@ public class InitConfig implements CommandLineRunner {
 
     private void addDeliveryMan(){
         var roleDelivery = roleRepository.findById(3L)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "role not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "role not found"));
 
         var deliveryMan = userRepository.findByUsername("delivery1");
 
@@ -115,9 +114,9 @@ public class InitConfig implements CommandLineRunner {
                 var now = LocalDateTime.now();
                 var user = new User();
                 user.setUsername("delivery1");
-                user.setEmail("yagopatrick@gmail.com");
-                user.setPhone("559195527395");
-                user.setPassword(passwordEncoder.encode("123"));
+                user.setEmail("yagoschnorr@gmail.com");
+                user.setPhone("5591980742607");
+                user.setPassword(passwordEncoder.encode("Gabriel0606*"));
                 user.setRoles(Set.of(roleDelivery));
                 user.setCreated_at(now);
                 user.setUpdated_at(now);
