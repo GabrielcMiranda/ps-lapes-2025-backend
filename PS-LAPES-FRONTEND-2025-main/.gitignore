@@ -1,0 +1,71 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# production
+/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Node modules
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build output
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# VSCode config (opcional, pode manter se for compartilhada)
+.vscode/
+
+# IDEs e SO
+.DS_Store
+Thumbs.db
+
+# Optional cache directories
+.cache/
+.tmp/
+vite.config.ts.temp/
+
+# Testing
+coverage/
+*.lcov
+
+# Storybook
+out/
+storybook-static/
+
+# MacOS & Linux swap
+*.swp
+*~
+
+# Prettier/ESLint cache
+.prettiercache
+.eslintcache
