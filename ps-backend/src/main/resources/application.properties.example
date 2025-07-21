@@ -1,0 +1,47 @@
+#as duas chaves sao de extrema importancia para a criptografia dos tokens
+jwt.public.key=classpath:public.key
+jwt.private.key=classpath:app.key
+
+# nao esqueça de criar essas pastas no projeto antes de rodar
+app.upload.categories-path={MY-SYSTEM-PATH}
+app.upload.items-path={MY-SYSTEM-PATH}
+
+app.takeaway-address.street= {MY-ADDRESS-STREET}
+app.takeaway-address.number={MY-ADDRESS-NUMBER}
+app.takeaway-address.neighbourhood={MY-ADDRESS-NEIGHBOURHOOD}
+app.takeaway-address.city={MY-ADDRESS-CITY}
+app.takeaway-address.state={MY-ADDRESS-STATE}
+app.takeaway-address.zipCode={MY-ADDRESS-ZIPCODE}
+app.takeaway-address.complement= {MY-ADDRESS-COMPLEMENT}
+app.takeaway-address.latitude= {MY-ADDRESS-LATITUDE}
+app.takeaway-address.longitude= {{MY-ADDRESS-LONGITUDE}
+
+app.base-url: http://localhost:8080
+
+ors.api.key= {MY-OPENROUTERSERVICE-API-KEY}
+
+spring.application.name=ps-backend
+spring.jpa.show-sql=true
+spring.jpa.hibernate.ddl-auto=update
+
+spring.sql.init.mode=always
+spring.jpa.defer-datasource-initialization=true
+
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
+spring.datasource.driver-class-name=org.postgresql.Driver
+spring.datasource.url={MY-DATABASE-URL}
+spring.datasource.username={MY-DATABASE-USERNAME}
+spring.datasource.password={MY-DATABASE-PASSWORD}
+
+spring.mail.host=smtp.gmail.com
+spring.mail.port=587
+spring.mail.username={MY-EMAIL}
+app.mail.from={MY-EMAIL}
+#é preciso gerar essa senha em um email obrigatoriamente protegido com dois fatores. fica no campo de segurança da sua conta no email
+spring.mail.password={MY-EMAIL-APP-PASSWORD}
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.properties.mail.smtp.starttls.required=true
+spring.mail.properties.mail.smtp.connectiontimeout=5000
+spring.mail.properties.mail.smtp.timeout=5000
+spring.mail.properties.mail.smtp.writetimeout=5000
